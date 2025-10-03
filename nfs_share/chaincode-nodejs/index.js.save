@@ -1,0 +1,162 @@
+const shim = require('fabric-shim');
+
+//approch 1
+// In this approch i am inserting th data as is in the ledger
+// Then i am creating the index based on hash value
+// Then i am storing the index in ledger
+// Hoping for fater queries
+
+class SimpleChaincode extends shim.ChaincodeInterface
+{
+
+    // initialize the chaincode
+    async Init(stub) {
+        // let ret = stub.getFunctionAndParameters();
+        // console.info(ret);
+        // let args = ret.params;
+        // if (args.length != 2) {
+        //     throw new Error('Incorrect number of arguments. Expecting 2 argument');
+        // }
+        // let index = args[0]
+        // let indexvalue = args[1];
+        // try {
+        //     await stub.putState(index, Buffer.from(indexvalue));
+        // } catch (err) {
+        //     console.log(err);
+        //     return shim.error(err);                        
+        // }                        
+        // console.log("instantiated");                        
+        // return shim.success();     
+        let cert_hash = {
+            txnId: "202402191106",
+            hash_value: "AKASHKATE",
+            deptCode: "MUMBAI"
+
+        }    
+        
+	try {
+		await this.addCertificateHash(stub,cert_hash.txnId, cert_hash.hash_value, cert_hash.deptCode);
+	}
+        catch {
+		console.log(err);
+        	return shim.error(err);
+	}
+	
+	console.log("instantiated");
+        return shim.success();
+    }
+
+    async Invoke(stub) {
+        let ret = stub.getFunctionAndParameters();
+        console.info("ret: " + ret);
+        let method = this[ret.fcn];
+        if (!method) {
+            console.log('no method of name:' + ret.fcn + ' found');
+            return shim.success();
+        }
+        try {
+            let payload = await method(stub, ret.params);
+            return shim.success(payload);
+        } catch (err) {
+            console.log(err);
+            return shim.error(err);
+        }
+    }
+
+
+
+    async addCertificateHash(stub, txnId, hash_value, deptCode) {
+
+
+        let certificateIfExists = await stub.getState(hash_value);
+        console.log("certificateIfExists: " + certificateIfExists.toString());
+        if (certificateIfExists.toString()) {
+            let cert = {};
+            try {
+                cert = JSON.parse(certificateIfExists.toString());
+                console.log("certificateIfExists: " + cert.hashVal);
+                console.log("This Users already stored certificate");
+                throw new Error("false");
+            } catch (err) {
+                throw new Error(err);
+            }
+        }
+
+        // let cert_hashh = {};                                //CSVS  changes
+        // //      cert_hash.docType = 'certHash';
+        // //cert_hash.userId = user_id;
+        // cert_hash.docType = 'cert';
+        // cert_hash.txnId = args[0]
+        // cert_hash.hashVal = hash_value;
+        // cert_hash.deptCode = args[2]  
+
+        let cert_hash = {
+            txnId: txnId,
+            hash_value: hash_value,
+            deptCode: deptCode
+
+        }
+
+        console.log("Adding new cerificate...with hash value--->",cert_hash.hash_value);
+
+        try {
+            // I am putting the data as it is inside the ledger
+            // key = hash_value , value = json format (txnid, deptCode, and hash_value)
+            await stub.putState(hash_value, Buffer.from(JSON.stringify(cert_hash)));
+
+            // And now i will apply index (compositkey) based on 2 of the paramters for better searching
+            // Creating an index for faster query searches (trial and error need to test it's performance)
+            // Right now index is created on only 1 field (hash value) 
+            // Indexing creates a sepated data-structure which stores the index as key and the data associated to it as value
+            // This results in faster query searches 
+            let indexName = 'indexhash';
+            let hashValIndex = await stub.createCompositeKey(indexName, [cert_hash.hash_value]);
+
+            //  Save index entry to state. Only the key name is needed, no need to store a duplicate copy of the marble.
+            //  Note - passing a 'nil' value will effectively delete the key from state, therefore we pass null character as value
+            await stub.putState(hashValIndex, Buffer.from('\u0000'));
+
+        } catch (err) {
+            console.log(err);
+            return shim.error(err);
+        }
+        console.log("==================Cerificate Hash successfully store in ledger======");
+    }
+
+
+    async checkCertificate(stub, hash_value) {
+
+        //let hash_value = hash_value;
+        let certificateIfExists = await stub.getState(hash_value);
+        console.log("certificateIfExists: " + certificateIfExists.toString());
+        if (certificateIfExists.toString()) {
+            let cert = {};
+            try {
+                cert = JSON.parse(certificateIfExists.toString());
+
+                if (cert.hashVal) {
+                    //console.log("certificateIfExists: userId "+ cert.userId);
+                    console.log("certificateIfExists: hash Value " + cert.hashVal);
+                    console.log("certificate found! ");
+                    //return cert.hashVal;
+                    return Buffer.from(JSON.stringify(cert.hashVal));
+                    //return "false";
+                }
+            } catch (err) {
+                throw new Error(err);
+            }
+
+        }
+        return "false";
+
+    }
+
+
+};
+
+const server = shim.server(new SimpleChaincode(), {
+    ccid: process.env.CHAINCODE_ID,
+    address: process.env.CHAINCODE_SERVER_ADDRESS
+});
+
+server.start();

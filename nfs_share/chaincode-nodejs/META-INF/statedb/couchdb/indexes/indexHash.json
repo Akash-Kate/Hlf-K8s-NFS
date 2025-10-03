@@ -1,0 +1,10 @@
+{
+    "index": {
+        "fields": [
+            "hash_value"
+        ]
+    },
+    "ddoc": "indexHashDoc",
+    "name": "indexhash",
+    "type": "json"
+}

@@ -1,0 +1,111 @@
+const shim = require('fabric-shim');
+
+
+class SimpleChaincode extends shim.ChaincodeInterface {
+
+    // initialize the chaincode
+    async Init(stub) {
+        console.log("instantiated");
+        return shim.success();
+    }
+
+    async Invoke(stub) {
+        let ret = stub.getFunctionAndParameters();
+        console.info("ret: " + ret);
+        let method = this[ret.fcn];
+        if (!method) {
+            console.log('no method of name:' + ret.fcn + ' found');
+            return shim.success();
+        }
+        try {
+            let payload = await method(stub, ...ret.params);
+            return shim.success(payload);
+        } catch (err) {
+            console.log(err);
+            return shim.error(err);
+        }
+    }
+
+
+
+    async addCertificateHash(stub, txnId, hash_value, deptCode) {
+
+        let certificateIfExists = await stub.getState(hash_value);
+        //26jun console.log("certificateIfExists: " + certificateIfExists.toString());
+        if (certificateIfExists.toString()) {
+            let cert = {};
+            try {
+                cert = JSON.parse(certificateIfExists.toString());
+                //26jun console.log("certificateIfExists: " + cert.hashVal);
+                //26jun console.log("This Users already stored certificate");
+
+                // Return an error message indicating the certificate already exists
+                return Buffer.from("Certificate already exists in the ledger");
+
+            } catch (err) {
+                return shim.error(err);
+            }
+        }
+        let cert_hash = {
+            txnId: txnId,
+            hash_value: hash_value,
+            deptCode: deptCode
+
+        }
+
+        //26jun console.log("Adding new cerificate...with hash value--->", cert_hash.hash_value);
+
+        try {
+            //26jun console.log("Testing addCertificatehash function parameters");
+            //26jun console.log("Testing hash value", cert_hash.hash_value);
+            //26jun console.log("Testing txnId", cert_hash.txnId);
+            //26jun console.log("Testing deptcode", cert_hash.deptCode);
+
+            await stub.putState(hash_value, Buffer.from(JSON.stringify(cert_hash)));
+
+            //26jun console.log("==================Certificate Hash successfully stored in ledger==========");
+            return Buffer.from("Certificate Hash successfully stored");
+
+        } catch (err) {
+            console.log(err);
+            return shim.error(err);
+        }
+
+    }
+
+
+    async checkCertificate(stub, hash_value) {
+
+        let certificateIfExists = await stub.getState(hash_value);
+        //26jun console.log("certificateIfExists: " + certificateIfExists.toString());
+        if (certificateIfExists.toString()) {
+            let cert = {};
+            try {
+                cert = JSON.parse(certificateIfExists.toString());
+
+                if (cert.hash_value) {
+                    //console.log("certificateIfExists: userId "+ cert.userId);
+                    //26jun console.log("certificateIfExists: hash Value " + cert.hash_value);
+                    console.log("certificate found! ");
+                    //return cert.hashVal;
+                    return Buffer.from("Certificate Found");
+                    //return "false";
+                }
+            } catch (err) {
+                return shim.error(err);
+            }
+
+        }
+        return Buffer.from("false");
+
+    }
+
+
+};
+
+const server = shim.server(new SimpleChaincode(), {
+    ccid: process.env.CHAINCODE_ID,
+    address: process.env.CHAINCODE_SERVER_ADDRESS
+});
+
+server.start();

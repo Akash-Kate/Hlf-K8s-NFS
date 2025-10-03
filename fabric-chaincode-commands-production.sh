@@ -9,6 +9,10 @@ tar cfz basic-org1.tgz code.tar.gz metadata.json
 chmod 777 basic-org1.tgz
 rm -rf code.tar.gz
 
+# Install the chaincode in every peer
+
+peer lifecycle chaincode install ./builders/external/chaincode/packaging/basic-org1.tgz
+
 
 basic:918855dcb080727cf3ba245412c5ffd861bafd2e49456ee5676ae7355553d81a
 

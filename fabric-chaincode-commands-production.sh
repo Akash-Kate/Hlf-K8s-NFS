@@ -16,7 +16,7 @@ peer lifecycle chaincode install ./builders/external/chaincode/packaging/basic-o
 # When you the the chaincode install command you will get a package identifier which we will use further
 
 
-basic:918855dcb080727cf3ba245412c5ffd861bafd2e49456ee5676ae7355553d81a
+basic:e062066e57fadba279b6405d18e9a12737148aab7416772c4f5585225c958552
 
 
 

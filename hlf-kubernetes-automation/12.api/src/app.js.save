@@ -1,0 +1,133 @@
+const express = require("express");
+const app = express();
+var morgan = require('morgan')
+app.use(morgan('combined'))
+const bodyparser = require("body-parser");
+const { registerUser, userExist } = require("./registerUser");
+const {AddCertificateHash,AddBulkCertificateHash} =require('./tx')
+//const {GetAllAssets,GetAssetHistory} =require('./query')
+//const performance = require('performance-now');
+const { performance } = require('perf_hooks');
+const {CheckCertificate} = require('./query')
+
+
+const chaincodeName = "basic";
+const org = "Org1MSP";
+const userId = "domicile"
+//const channelName = "mychannel"
+
+var cors = require('cors')
+app.use(cors())
+app.use(bodyparser.json());
+
+
+// Establish the gateway connection when the server starts
+const request = {
+    "org": org,
+    "userId": 'your_user_id',
+    channelName: 'your_channel',
+    chaincodeName: 'your_chaincode'
+};
+
+
+
+
+
+createGatewayConnection(request)
+.then
+app.listen(4000, () => {
+    console.log("server started");
+
+})
+
+
+
+app.post("/register", async (req, res) => {
+
+    try {
+        let org = org;
+        let userId = userId;
+        let result = await registerUser({ OrgMSP: org, userId: userId });
+        res.send(result);
+
+    } catch (error) {
+        res.status(500).send(error)
+    }
+});
+
+
+app.post("/addCertificateHash", async (req, res) => {
+    try {
+
+	//const start = performance.now();
+        let payload = {
+            "org": org,
+            "channelName": req.body.channelname,
+            "chaincodeName": chaincodeName,
+            "userId": userId,
+	    "txnId": req.body.txnId,
+	    "data" : req.body.data
+     	}
+
+        let result = await AddCertificateHash(payload);
+        res.send(JSON.stringify(result));
+    } catch (error) {
+        res.status(500).send(error)
+    }
+});
+
+
+app.post("/bulkCertificateHash", async (req, res) => {
+    try {
+
+	let hashValuesAndTxnId = req.body.hashdata.hashlist.hash_values;
+
+        let payload = {
+            "org": org,
+            "channelName": req.body.channelname,
+            "chaincodeName": chaincodeName,
+            "userId": userId,
+	    "txnId": req.body.txnId,
+            "data" : hashValuesAndTxnId.map(hash => {
+		return {
+		     "txnId":hash.txnId,
+		     "hash_value":hash.hash_value,
+		     "deptCode":req.body.deptCode
+		};
+
+	   })
+        };
+
+        let result = await AddBulkCertificateHash(payload);
+        res.send(JSON.stringify(result));
+    } catch (error) {
+        res.status(500).send(error)
+    }
+});
+
+
+app.get('/checkCertificateHash', async (req, res) => {
+
+    try {
+
+	    let payload = {
+            "org": org,
+            "channelName": req.body.channelName,
+            "chaincodeName": chaincodeName,
+	    "userId": userId,
+	    "txnId": req.body.txnId,
+            "data": req.body.data
+        }
+
+        let result = await CheckCertificate(payload);
+        res.send(JSON.stringify(result));
+    } catch (error) {
+        res.status(500).send(error)
+    }
+
+});
+
+
+
+
+

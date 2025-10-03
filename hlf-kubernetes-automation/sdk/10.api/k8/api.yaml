@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: api
+  template:
+    metadata:
+      labels:
+        name: api
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: svc
+                    operator: In
+                    values:
+                      - peer
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: mypvc
+        - name: ca-client-config
+          configMap:
+            name: ca-client-config
+            items:
+              - key: config.json
+                path: config.json
+                mode: 0544
+      containers:
+        - name: api
+          stdin: true
+          tty: true
+          resources:
+            limits:
+              memory: "4000Mi"
+              cpu: "600m"
+            requests:
+              memory: "3500Mi"
+              cpu: "500m"
+          image: 10.210.12.195:5022/sdk:auto1
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: data
+              mountPath: /usr/src/app/connection-profile
+              subPath: connection-profile
+            - name: data
+              mountPath: /organizations
+              subPath: organizations
+            - name: data
+              mountPath: /usr/src/app/wallet
+              subPath: wallet
+            - mountPath: /usr/src/app/config.json
+              name: ca-client-config
+              subPath: config.json
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: api
+  name: api
+spec:
+  type: NodePort #ClusterIP
+  ports:
+  - port: 4000
+    protocol: TCP
+    targetPort: 4000
+    nodePort: 30000
+  selector:
+    name: api

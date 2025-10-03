@@ -1,0 +1,21 @@
+identifier: basic:4f2b30d6e669326d8faa1e36f51d9cc91ddc5a63031248af4c2fbac612f0699d    # peer0 cli
+
+identifier: basic:4f2b30d6e669326d8faa1e36f51d9cc91ddc5a63031248af4c2fbac612f0699d    # peer1 cli
+
+identifier: basic:4f2b30d6e669326d8faa1e36f51d9cc91ddc5a63031248af4c2fbac612f0699d    # peer2 cli
+
+identifier: basic:4f2b30d6e669326d8faa1e36f51d9cc91ddc5a63031248af4c2fbac612f0699d    # peer3 cli
+
+
+approve chaincode peer0-org1
+peer lifecycle chaincode approveformyorg --channelID mychannel --name basic --version 1.0 --init-required --package-id basic:94cf9256d95a17993e9d14307142a1f8fc871671c27959a0039be8014b77e58b --sequence 1 -o orderer:7050 --tls --cafile $ORDERER_CA
+
+
+
+peer lifecycle chaincode approveformyorg --channelID mychannel --name basic --version 1.0 --init-required --package-id basic:94cf9256d95a17993e9d14307142a1f8fc871671c27959a0039be8014b77e58b --sequence 1 -o orderer:7050 --tls --cafile $ORDERER_CA
+
+
+
+
+checkcommitreadiness
+peer lifecycle chaincode checkcommitreadiness --channelID mychannel --name basic --version 1.0 --init-required --sequence 1 -o -orderer:7050 --tls --cafile $ORDERER_CA

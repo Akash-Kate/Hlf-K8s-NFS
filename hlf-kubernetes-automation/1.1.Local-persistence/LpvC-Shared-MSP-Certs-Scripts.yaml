@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blockchain-shared-common-msp-certs-ub31
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-storage
+  volumeName: blockchain-shared-common-msp-certs-ubf31  # Ensures binding to that exact PV mathcing pv name using keywork volumeName

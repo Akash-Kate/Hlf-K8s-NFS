@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reenroll-certs
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: reenroll-certs
+    spec:
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: mypvc
+      containers:
+        - name: reenroll-certs
+          image: hyperledger/fabric-ca:1.5.5
+          resources:
+            requests:
+              memory: "300Mi"
+              cpu: "200m"
+            limits:
+              memory: "400Mi"
+              cpu: "250m"
+          volumeMounts:
+            - mountPath: /organizations
+              name: fabricfiles
+              subPath: organizations
+            - mountPath: /scripts
+              name: fabricfiles
+              subPath: scripts
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ./scripts/orderer-certs-reenroll.sh &&
+              ./scripts/org1-certs-reenroll.sh
+      restartPolicy: Never

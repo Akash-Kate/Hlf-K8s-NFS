@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mypv
+  #namespace: portainer
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /mnt/nfs_automation/nfs_share
+    server: 10.210.12.234
+
+
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+  #name: mypvportainer
+  #namespace: portainer
+#spec:
+#  storageClassName: standard
+#  capacity:
+#    storage: 5Gi
+#  volumeMode: Filesystem
+#  accessModes:
+#    - ReadWriteMany
+#  nfs:
+#    path: /mnt/nfs_automation/nfs_share
+#    server: 10.210.12.234

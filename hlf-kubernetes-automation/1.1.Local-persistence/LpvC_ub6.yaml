@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blockchain-pvc-ub6
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: local-storage
+  volumeName: blockchain-pv-ub6  # Ensures binding to that exact PV mathcing pv name using keywork volumeName

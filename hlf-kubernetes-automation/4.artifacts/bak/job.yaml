@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: artifacts-37
+spec:
+  template:
+    spec:
+      containers:
+        - name: artifacts
+          image: hyperledger/fabric-tools:2.3
+          workingDir: /
+          volumeMounts:
+            - mountPath: /organizations
+              name: fabricfiles
+              subPath: organizations
+            - mountPath: /configtx
+              name: fabricfiles
+              subPath: configtx
+            - mountPath: /system-genesis-block
+              name: fabricfiles
+              subPath: system-genesis-block
+            - mountPath: /channel-artifacts
+              name: fabricfiles
+              subPath: channel-artifacts
+            - mountPath: /scripts
+              name: fabricfiles
+              subPath: scripts
+          command:
+            - /bin/bash
+            - -c
+            - |
+              ./scripts/createChannel.sh maharashtra &&
+              ./scripts/createChannel.sh andamannicobar &&
+              ./scripts/createChannel.sh puducherry &&
+              ./scripts/createChannel.sh tamilnadu &&
+              ./scripts/createChannel.sh kerala &&
+              ./scripts/createChannel.sh lakshadweep &&
+              ./scripts/createChannel.sh goa &&
+              ./scripts/createChannel.sh karnataka &&
+              ./scripts/createChannel.sh dadranagarhaveli &&
+              ./scripts/createChannel.sh damandiu &&
+              ./scripts/createChannel.sh gujarat &&
+              ./scripts/createChannel.sh madhyapradesh &&
+              ./scripts/createChannel.sh chhattisgarh &&
+              ./scripts/createChannel.sh odisha &&
+              ./scripts/createChannel.sh jharkhand &&
+              ./scripts/createChannel.sh westbengal &&
+              ./scripts/createChannel.sh assam &&
+              ./scripts/createChannel.sh meghalaya &&
+              ./scripts/createChannel.sh tripura &&
+              ./scripts/createChannel.sh mizoram &&
+              ./scripts/createChannel.sh manipur &&
+              ./scripts/createChannel.sh nagaland &&
+              ./scripts/createChannel.sh arunachalpradesh &&
+              ./scripts/createChannel.sh sikkim &&
+              ./scripts/createChannel.sh bihar &&
+              ./scripts/createChannel.sh uttarpradesh &&
+              ./scripts/createChannel.sh rajasthan &&
+              ./scripts/createChannel.sh delhi &&
+              ./scripts/createChannel.sh haryana &&
+              ./scripts/createChannel.sh uttarakhand &&
+              ./scripts/createChannel.sh chandigarh &&
+              ./scripts/createChannel.sh punjab &&
+              ./scripts/createChannel.sh himachalpradesh &&
+              ./scripts/createChannel.sh jammukashmir
+      restartPolicy: Never
+      volumes:
+        - name: fabricfiles
+          persistentVolumeClaim:
+            claimName: mypvc

@@ -13,6 +13,8 @@ rm -rf code.tar.gz
 
 peer lifecycle chaincode install ./builders/external/chaincode/packaging/basic-org1.tgz
 
+# When you the the chaincode install command you will get a package identifier which we will use further
+
 
 basic:918855dcb080727cf3ba245412c5ffd861bafd2e49456ee5676ae7355553d81a
 
